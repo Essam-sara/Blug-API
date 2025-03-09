@@ -1,3 +1,5 @@
+const APIError = require("../util/APIError"); // تأكد من إضافة هذه السطر
+
 const errorhandler =(err, req, res, next) => {
   console.error(err.stack);
   if (err instanceof APIError) {
