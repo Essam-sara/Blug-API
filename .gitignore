@@ -1,0 +1,4 @@
+/node_modules
+/posts.json
+/users.json
+/.env
