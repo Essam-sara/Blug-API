@@ -1,16 +1,21 @@
 const express = require("express");
 const router = express.Router();
 const postsController = require("../controllers/postsController");
+const auth = require("../middlewares/auth");
 
-// GET /posts -> get all posts
-router.get("/", postsController.getPosts);
-// POST /posts -> create a new post
-router.post("/", postsController.createPost);
-// GET /posts/:id -> get a post by id
-router.get("/:id", postsController.getPostById);
-// PUT /posts/:id -> update a post by id
-router.put("/:id", postsController.updatePostById);
-// DELETE /posts/:id -> delete a post by id
-router.delete("/:id", postsController.deletePostById);
+// مسار للحصول على كل المنشورات
+router.get("/", auth, postsController.getPosts);
+
+// مسار لإنشاء منشور جديد
+router.post("/", auth, postsController.createPost);
+
+// مسار للحصول على منشور حسب ID
+router.get("/:id", auth, postsController.getPostById);
+
+// مسار لتحديث منشور
+router.put("/:id", auth, postsController.updatePostById);
+
+// مسار لحذف منشور
+router.delete("/:id", auth, postsController.deletePostById);
 
 module.exports = router;
