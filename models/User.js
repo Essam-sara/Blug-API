@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema({
   timestamps:true
 });
 //make a index 
-userSchema.index({email:1},{unique:true}); 
+// userSchema.index({email:1},{unique:true}); 
 
 //export the modle
 module.exports = mongoose.model("User", userSchema);
