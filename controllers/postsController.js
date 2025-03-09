@@ -1,34 +1,33 @@
 const Post = require("../models/Post");
 const APIError = require("../util/APIError");
 
-// Get all posts
 const getPosts = async (req, res, next) => {
+  console.log('Fetching all posts...');
   try {
     const posts = await Post.find();
+    console.log(`Found ${posts.length} posts`);
     res.status(200).json({ status: "success", data: { posts } });
   } catch (err) {
+    console.error('Error fetching posts:', err);
     next(err);
   }
 };
 
-// Create a new post
 const createPost = async (req, res, next) => {
+  console.log('Creating post with data:', req.body);
   try {
-    console.log("Request Body:", req.body); // Log the request body
-
-    const newPost = new Post(req.body);  // Create a new post using the request body
-    await newPost.save();  // Save the post to the database
-
-    res.status(201).json({ status: "success", data: { post: newPost } });  // Respond with the post
+    const newPost = new Post(req.body);
+    await newPost.save();
+    console.log('Post created successfully:', newPost);
+    res.status(201).json({ status: "success", data: { post: newPost } });
   } catch (err) {
-    console.error("Error creating post:", err);  // Log any error
-    next(err);  // Pass the error to the global error handler
+    console.error('Error creating post:', err);
+    next(err);
   }
 };
 
-
-// Get post by ID
 const getPostById = async (req, res, next) => {
+  console.log(`Fetching post with ID: ${req.params.id}`);
   try {
     const post = await Post.findById(req.params.id);
     if (!post) {
@@ -40,8 +39,8 @@ const getPostById = async (req, res, next) => {
   }
 };
 
-// Update post by ID
 const updatePostById = async (req, res, next) => {
+  console.log(`Updating post with ID: ${req.params.id}`);
   try {
     const updatedPost = await Post.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
     if (!updatedPost) {
@@ -53,8 +52,8 @@ const updatePostById = async (req, res, next) => {
   }
 };
 
-// Delete post by ID
 const deletePostById = async (req, res, next) => {
+  console.log(`Deleting post with ID: ${req.params.id}`);
   try {
     const post = await Post.findByIdAndDelete(req.params.id);
     if (!post) {
