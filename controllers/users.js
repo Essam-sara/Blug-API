@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const APIError = require("../util/APIError");
-
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 // Get all users
 const getUsers = async (req, res, next) => {
   try {
@@ -11,42 +12,76 @@ const getUsers = async (req, res, next) => {
   }
 };
 
-// Create a new user
-const createUser = async (req, res, next) => {
+const signup = async (req, res, next) => {
+  const { name, email, password, passwordConfirm, age, city } = req.body;
+
+  // التحقق من تطابق كلمة المرور
+  console.log('Signup request received with data:', req.body);
+
+  if (password !== passwordConfirm) {
+    return res.status(400).json({ message: "Passwords do not match" });
+  }
+
   try {
-    console.log("Request Body:", req.body); // Log incoming request body
+    // تشفير كلمة المرور
+    const hashedPassword = await bcrypt.hash(password, 12);
+    console.log('Password hashed successfully');
 
-    const { email, name, password, role, age, city } = req.body;
+    const newUser = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      age,
+      city
+    });
 
-    // Check if the required fields are present
-    if (!email || !name || !password || !age || !city) {
-      return res.status(400).json({
-        status: "failure",
-        message: "Missing required fields: email, name, password, age, and city are required.",
-      });
-    }
+    console.log('New user created:', newUser);
 
-    // Check if email already exists in the database
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({
-        status: "failure",
-        message: "Email already exists",
-      });
-    }
-
-    // Create a new user instance
-    const newUser = new User({ email, name, password, role: role || "user", age, city });
-    await newUser.save();
-
-    res.status(201).json({ status: "success", data: { user: newUser } });
+    res.status(201).json({
+      status: "success",
+      data: { user: newUser }
+    });
   } catch (err) {
-    console.error("Error creating user:", err); // Log the error
-    next(err); // Pass the error to the global error handler
+    console.error("Error during signup:", err);
+    next(err);
   }
 };
 
+const login = async (req, res, next) => {
+  const { email, password } = req.body;
 
+  console.log('Login request received with email:', email);
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      console.log('Invalid credentials: User not found');
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      console.log('Invalid credentials: Password mismatch');
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN }
+    );
+
+    console.log('JWT token generated successfully');
+
+    res.status(200).json({
+      status: "success",
+      token
+    });
+  } catch (err) {
+    console.error("Error during login:", err);
+    next(err);
+  }
+};
 // Get a user by ID
 const getUserById = async (req, res, next) => {
   try {
@@ -101,8 +136,11 @@ const deleteUserById = async (req, res, next) => {
 };
 
 module.exports = {
+  
+  signup,
+  login,
   getUsers,
-  createUser,
+
   getUserById,
   updateUserById,
   deleteUserById,
