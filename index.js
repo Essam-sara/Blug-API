@@ -14,7 +14,7 @@ const postsRoutes = require("./routes/posts");
 const APIError = require("./util/APIError");
 
 //middleware import
-const errorhandler = require("./middlewares/errorhandler");
+const errorhandler = require("./middlewares/errorhandler")
 
 // create express app
 const app = express();
